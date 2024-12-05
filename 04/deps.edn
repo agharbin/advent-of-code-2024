@@ -1,0 +1,5 @@
+{:deps
+  {util/util {:local/root "../../util"}
+   org.clojure/core.match {:mvn/version "1.0.0"}
+   org.clojure/data.priority-map {:mvn/version "1.1.0"}
+   com.github.jpmonettas/flow-storm-dbg {:mvn/version "RELEASE"}}}
