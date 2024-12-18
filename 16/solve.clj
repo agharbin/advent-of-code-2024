@@ -78,7 +78,7 @@
 
 (defn trace-backward [node->length backward-edges]
   (let [backward-edges (dissoc backward-edges [start-position start-facing])
-        goal-node (first (sort-by #(node->length %) (for [f all-facings] [goal-position f])))]
+        goal-node (first (sort-by node->length (for [f all-facings] [goal-position f])))]
     (loop [xs [goal-node]
            found-positions #{(get-position goal-node)}]
       (if (seq xs)
