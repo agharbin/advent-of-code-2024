@@ -20,8 +20,6 @@
 
 ;; Part 1
 
-(def num-d-pads 2)
-
 (def keypad [[ \7  \8 \9]
              [ \4  \5 \6]
              [ \1  \2 \3]
@@ -50,12 +48,12 @@
        (map #(vector (get-in keypad %) %))
        (into {})))
 
-(defn keypad-enter-state [button]
+(defn keypad-positions [button num-d-pads]
   [(button->keypad-position button)
    (vec (repeat num-d-pads (button->d-pad-position \A)))])
 
 (defn push-a [level [[keypad-position d-pad-positions] cost]]
-  (if (= level (dec num-d-pads))
+  (if (= level (dec (count d-pad-positions)))
     (let [button-state (get-in d-pad (d-pad-positions level))
           next-button-position keypad-position
           next-cost (inc cost)]
@@ -104,32 +102,33 @@
         (push-a 0 [[keypad-position d-pad-positions] cost]))))
 
 (defn run-dijkstra [[keypad-start d-pad-positions :as start-state] goal-positions]
-  (loop [q (conj (pm/priority-map) [start-state 0])
-         positions->distance {}]
-    (let [[positions cost :as state] (peek q)]
-      (if (= goal-positions positions)
-        (positions->distance goal-positions)
-        (let [candidates (next-states state)
-              better-candidates (filter (fn [[new-positions new-score]]
-                                          (< new-score (get positions->distance new-positions Integer/MAX_VALUE)))
-                                        candidates)]
-          (recur
-            (into (pop q) better-candidates)
-            (into positions->distance better-candidates)))))))
+  (if (= start-state goal-positions)
+    0
+    (loop [q (conj (pm/priority-map) [start-state 0])
+           positions->distance {}]
+      (let [[positions cost :as state] (peek q)]
+        (if (= goal-positions positions)
+          (positions->distance goal-positions)
+          (let [candidates (next-states state)
+                better-candidates (filter (fn [[new-positions new-score]]
+                                            (< new-score (get positions->distance new-positions Integer/MAX_VALUE)))
+                                          candidates)]
+            (recur
+              (into (pop q) better-candidates)
+              (into positions->distance better-candidates))))))))
 
-
-(defn code-cost [code]
+(defn code-cost [code num-d-pads]
   (let [[a b c d] (seq code)]
     (+
-      (run-dijkstra (keypad-enter-state \A) (keypad-enter-state a))
-      (run-dijkstra (keypad-enter-state a) (keypad-enter-state b))
-      (run-dijkstra (keypad-enter-state b) (keypad-enter-state c))
-      (run-dijkstra (keypad-enter-state c) (keypad-enter-state d))
+      (run-dijkstra (keypad-positions \A num-d-pads) (keypad-positions a num-d-pads))
+      (run-dijkstra (keypad-positions a num-d-pads) (keypad-positions b num-d-pads))
+      (run-dijkstra (keypad-positions b num-d-pads) (keypad-positions c num-d-pads))
+      (run-dijkstra (keypad-positions c num-d-pads) (keypad-positions d num-d-pads))
       4)))
 
-(defn solve [data]
+(defn solve [data num-d-pads]
   (apply +
     (for [[code numeric-val] data]
-      (* (code-cost code) numeric-val))))
+      (* (code-cost code num-d-pads) numeric-val))))
 
-(time (solve input-data))
+(time (solve input-data 2))
