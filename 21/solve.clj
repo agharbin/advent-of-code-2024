@@ -1,4 +1,4 @@
-(ns advent.2024.21
+(ns advent.2024.21.1
   (:require
     [clojure.data.priority-map :as pm]
     [clojure.string :as s]
@@ -27,30 +27,6 @@
 
 (def d-pad [[nil \^ \A]
             [ \< \v \>]])
-
-(def all-keypad-positions (->> (for [r (range (count keypad)) c (range (count (first keypad)))] [r c])
-                           (filter #(some? (get-in keypad %)))
-                           (into #{})))
-
-(def all-d-pad-positions (->> (for [r (range (count d-pad)) c (range (count (first d-pad)))] [r c])
-                          (filter #(some? (get-in d-pad %)))
-                          (into #{})))
-
-(def button->d-pad-position
-  (->> (for [r (range (count d-pad)) c (range (count (first d-pad)))] [r c])
-       (filter #(some? (get-in d-pad %)))
-       (map #(vector (get-in d-pad %) %))
-       (into {})))
-
-(def button->keypad-position
-  (->> (for [r (range (count keypad)) c (range (count (first keypad)))] [r c])
-       (filter #(some? (get-in keypad %)))
-       (map #(vector (get-in keypad %) %))
-       (into {})))
-
-(defn keypad-positions [button num-d-pads]
-  [(button->keypad-position button)
-   (vec (repeat num-d-pads (button->d-pad-position \A)))])
 
 (defn push-a [level [[keypad-position d-pad-positions] cost]]
   (if (= level (dec (count d-pad-positions)))
@@ -93,6 +69,10 @@
              [])
         \A (push-a (inc level) [[keypad-position d-pad-positions] cost])))))
 
+(def all-d-pad-positions (->> (for [r (range (count d-pad)) c (range (count (first d-pad)))] [r c])
+                          (filter #(some? (get-in d-pad %)))
+                          (into #{})))
+
 (defn next-states [[[keypad-position d-pad-positions] cost]]
   (let [d1-position (first d-pad-positions)
         legal-d1-moves (->> (u/four-neighbors d1-position)
@@ -116,6 +96,22 @@
             (recur
               (into (pop q) better-candidates)
               (into positions->distance better-candidates))))))))
+
+(def button->d-pad-position
+  (->> (for [r (range (count d-pad)) c (range (count (first d-pad)))] [r c])
+       (filter #(some? (get-in d-pad %)))
+       (map #(vector (get-in d-pad %) %))
+       (into {})))
+
+(def button->keypad-position
+  (->> (for [r (range (count keypad)) c (range (count (first keypad)))] [r c])
+       (filter #(some? (get-in keypad %)))
+       (map #(vector (get-in keypad %) %))
+       (into {})))
+
+(defn keypad-positions [button num-d-pads]
+  [(button->keypad-position button)
+   (vec (repeat num-d-pads (button->d-pad-position \A)))])
 
 (defn code-cost [code num-d-pads]
   (let [[a b c d] (seq code)]
