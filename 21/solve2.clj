@@ -16,6 +16,7 @@
        (map parse-line)))
 
 (def input-file "input.dat")
+
 (def input-data (->> (slurp input-file) parse-input))
 
 ;; Part 2
@@ -71,43 +72,36 @@
 (def find-shortest-dpad-path-between-buttons
   (memoize
     (fn [level button-1 button-2]
-      (if (zero? level)
-        (->> (possible-paths dpad (dpad-button->position button-1) (dpad-button->position button-2))
-             (sort-by count)
-             first
-             count)
-        (->> (for [path (possible-paths dpad (dpad-button->position button-1) (dpad-button->position button-2))]
-               (compute-shortest-dpad-path-length (dec level) path))
-             (apply min))))))
+      (let [paths (possible-paths dpad (dpad-button->position button-1) (dpad-button->position button-2))]
+        (if (zero? level)
+          (->> paths (map count) (apply min))
+          (->> (for [path paths] (compute-shortest-dpad-path-length (dec level) path))
+               (apply min)))))))
 
 (def compute-shortest-dpad-path-length
   (memoize
     (fn [level path]
       (let [pairs (->> (conj (seq path) \A) (partition 2 1))]
         (apply +
-          (for [[b1 b2] pairs]
-            (find-shortest-dpad-path-between-buttons level b1 b2)))))))
+          (for [[button-1 button-2] pairs]
+            (find-shortest-dpad-path-between-buttons level button-1 button-2)))))))
 
 (def find-shortest-keypad-path-between-buttons
   (memoize
     (fn [level button-1 button-2]
+      (let [paths (possible-paths keypad (keypad-button->position button-1) (keypad-button->position button-2))]
       (if (zero? level)
-        (->> (possible-paths keypad (keypad-button->position button-1) (keypad-button->position button-2))
-             (sort-by count)
-             first
-             count)
-        (->>
-          (for [path (possible-paths keypad (keypad-button->position button-1) (keypad-button->position button-2))]
-            (compute-shortest-dpad-path-length (dec level) path))
-          (apply min))))))
+        (->> paths (map count) (apply min))
+        (->> (for [path paths] (compute-shortest-dpad-path-length (dec level) path))
+             (apply min)))))))
 
 (def compute-shortest-keypad-path-length
   (memoize
     (fn [level path]
       (let [pairs (->> (conj (seq path) \A) (partition 2 1))]
         (apply +
-          (for [[b1 b2] pairs]
-            (find-shortest-keypad-path-between-buttons level b1 b2)))))))
+          (for [[button-1 button-2] pairs]
+            (find-shortest-keypad-path-between-buttons level button-1 button-2)))))))
 
 (defn compute-score [level input]
   (apply +
