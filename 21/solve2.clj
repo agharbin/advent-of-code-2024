@@ -20,13 +20,13 @@
 
 ;; Part 2
 
-(def keypad [[ \7  \8 \9]
-             [ \4  \5 \6]
-             [ \1  \2 \3]
-             [nil  \0 \A]])
+(def keypad [[ \7 \8 \9]
+             [ \4 \5 \6]
+             [ \1 \2 \3]
+             [nil \0 \A]])
 
 (def dpad [[nil \^ \A]
-            [ \< \v \>]])
+           [ \< \v \>]])
 
 (def keypad-button->position
   (->> (for [r (range (count keypad)) c (range (count (first keypad)))]
